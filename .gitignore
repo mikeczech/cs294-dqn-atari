@@ -1,0 +1,3 @@
+*tfstate*
+deploy/.terraform
+.DS_Store
