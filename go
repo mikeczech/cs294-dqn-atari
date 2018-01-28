@@ -91,11 +91,7 @@ function task_usage {
 
 function task_tensorboard {
   ensure_venv
-  if [ -z "$(get_ip)" ]; then
-    tensorboard --logdir="$TF_LOGDIR"
-  else
-    open -a "$BROWSER" -g http://"$(get_ip)":6006
-  fi
+  tensorboard --logdir="$TF_LOGDIR"
 }
 
 CMD=${1:-}
