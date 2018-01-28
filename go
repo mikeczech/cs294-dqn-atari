@@ -6,6 +6,7 @@ export ROOT_DIR=app
 export TF_LOGDIR=/var/logs/tensorboard
 export TF_PROVIDER_USER=ec2-user
 export SOURCES=src
+export BROWSER=firefox
 
 function task_clean {
   rm -rv ./venv
@@ -90,7 +91,11 @@ function task_usage {
 
 function task_tensorboard {
   ensure_venv
-  tensorboard --logdir="$TF_LOGDIR"
+  if [ -z "$(get_ip)" ]; then
+    tensorboard --logdir="$TF_LOGDIR"
+  else
+    open -a "$BROWSER" -g http://"$(get_ip)":6006
+  fi
 }
 
 CMD=${1:-}
