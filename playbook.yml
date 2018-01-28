@@ -21,6 +21,13 @@
         mode: u+x
 
     - name: Start Tensorboard
-      shell: ps cax | grep tensorboard || ./go tensorboard > /dev/null &
+      shell: "ps cax | grep tensorboard || (./go tensorboard > /dev/null 2>&1 &)"
+      async: 1000
+      poll: 0
       args:
         chdir: "{{ work_dir }}"
+
+    - name: Wait for Tensorboard
+      wait_for:
+        port: 6006
+        delay: 10

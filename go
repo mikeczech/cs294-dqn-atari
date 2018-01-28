@@ -15,7 +15,7 @@ function task_clean {
 function ensure_venv {
   if [ ! -d venv ]; then
     virtualenv -p python34 venv
-    pip install -r $SOURCES/requirements.txt
+    ./venv/bin/pip install -r $SOURCES/requirements.txt
   fi
   set +u
   source ./venv/bin/activate
