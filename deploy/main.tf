@@ -28,9 +28,18 @@ resource "aws_security_group" "default" {
   name   = "default_security_group"
   vpc_id = "${aws_vpc.default.id}"
 
+  # SSH access
   ingress {
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Tensorboard access
+  ingress {
+    from_port   = 6006
+    to_port     = 6006
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -44,15 +53,19 @@ resource "aws_security_group" "default" {
 }
 
 resource "aws_key_pair" "auth" {
-  public_key = "${var.ssh_public_key}"
+  public_key = "${file(var.ssh_public_key)}"
 }
 
 resource "aws_instance" "deep_learning" {
-  ami           = "ami-55e7852f"
+  ami           = "ami-ca0136b0"
   instance_type = "t2.micro"
   key_name      = "${aws_key_pair.auth.id}"
 
   vpc_security_group_ids = ["${aws_security_group.default.id}"]
 
   subnet_id = "${aws_subnet.default.id}"
+}
+
+output "ip" {
+  value = "${aws_instance.deep_learning.public_ip}"
 }

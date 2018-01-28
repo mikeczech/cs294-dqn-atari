@@ -1,0 +1,26 @@
+---
+- hosts: all
+  vars:
+    work_dir: "/home/{{ username }}/{{ root_dir }}"
+  tasks:
+
+    - name: Create directory for app
+      file:
+        path: "{{ work_dir }}"
+        state: directory
+
+    - name: Synchronize source code
+      synchronize:
+        src: src
+        dest: "{{ work_dir }}"
+
+    - name: Copy Go script
+      copy:
+        src: go
+        dest: "{{ work_dir }}/go"
+        mode: u+x
+
+    - name: Start Tensorboard
+      shell: ps cax | grep tensorboard || ./go tensorboard > /dev/null &
+      args:
+        chdir: "{{ work_dir }}"
