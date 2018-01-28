@@ -6,7 +6,6 @@ export ROOT_DIR=app
 export TF_LOGDIR=/var/logs/tensorboard
 export TF_PROVIDER_USER=ec2-user
 export SOURCES=src
-export BROWSER=firefox
 
 function task_clean {
   rm -rv ./venv
@@ -15,7 +14,7 @@ function task_clean {
 
 function ensure_venv {
   if [ ! -d venv ]; then
-    virtualenv -p python34 venv
+    virtualenv -p python3 venv
     ./venv/bin/pip install -r $SOURCES/requirements.txt
   fi
   set +u
@@ -62,7 +61,7 @@ function task_deploy {
 
 function task_local_run {
   ensure_venv
-  python $SOURCES/main.py
+  PYTHONPATH=$(pwd)/src/dqn:$PYTHONPATH python $SOURCES/main.py
 }
 
 function task_run {
