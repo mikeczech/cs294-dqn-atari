@@ -36,6 +36,13 @@ function ensure_ansible {
   pip install ansible
 }
 
+function sync {
+  ensure_ssh_key
+  echo "Syncing files..."
+  rsync -a --include={go,src/***} --exclude="*" . -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)":/home/"$TF_PROVIDER_USER"/app
+  echo "..Done!"
+}
+
 function prepare_env {
   ensure_ansible
   echo "ec2" \
@@ -43,6 +50,7 @@ function prepare_env {
        "ansible_user=$TF_PROVIDER_USER" \
        "ansible_ssh_private_key_file=${SSH_PRIVATE_KEY}" \
        > hosts
+  sync
   ansible-playbook -i hosts playbook.yml --extra-vars "username=$TF_PROVIDER_USER root_dir=$ROOT_DIR"
 }
 
@@ -70,7 +78,7 @@ function task_run {
     echo "Please deploy your environment (./go deploy)"
     exit 1
   fi
-  prepare_env
+  sync
   ssh -i "$SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)" "cd ${ROOT_DIR} && ./go local-run"
 }
 

@@ -1,25 +1,20 @@
 ---
 - hosts: all
+  become: true
+  tasks:
+    - name: Install ffmpeg
+      shell: |
+        cd /usr/local/bin
+        mkdir ffmpeg
+        cd ffmpeg
+        wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
+        tar -xf ffmpeg-release-64bit-static.tar.xz
+        ln -s /usr/local/bin/ffmpeg/ffmpeg-3.4.1-64bit-static/ffmpeg /usr/bin/ffmpeg
+
+- hosts: all
   vars:
     work_dir: "/home/{{ username }}/{{ root_dir }}"
   tasks:
-
-    - name: Create directory for app
-      file:
-        path: "{{ work_dir }}"
-        state: directory
-
-    - name: Synchronize source code
-      synchronize:
-        src: src
-        dest: "{{ work_dir }}"
-
-    - name: Copy Go script
-      copy:
-        src: go
-        dest: "{{ work_dir }}/go"
-        mode: u+x
-
     - name: Start Tensorboard
       shell: "ps cax | grep tensorboard || (./go tensorboard > /dev/null 2>&1 &)"
       async: 1000
@@ -31,3 +26,4 @@
       wait_for:
         port: 6006
         delay: 10
+        timeout: 1000
