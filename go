@@ -43,14 +43,14 @@ function sync {
   echo "..Done!"
 }
 
-function prepare_env {
+function provision {
   ensure_ansible
+  ensure_ssh_key
   echo "ec2" \
-       "ansible_host=$(get_ip) " \
+       "ansible_host=$(get_ip)" \
        "ansible_user=$TF_PROVIDER_USER" \
        "ansible_ssh_private_key_file=${SSH_PRIVATE_KEY}" \
        > hosts
-  sync
   ansible-playbook -i hosts playbook.yml --extra-vars "username=$TF_PROVIDER_USER root_dir=$ROOT_DIR"
 }
 
@@ -65,6 +65,7 @@ function ensure_ssh_key {
 
 function task_deploy {
   task_tf "apply"
+  provision
 }
 
 function task_local_run {
@@ -89,6 +90,7 @@ function task_tf {
     -var "ssh_public_key=$SSH_PUBLIC_KEY" \
     -var "access_key=$(gopass show dev/aws-access-key)" \
     -var "secret_key=$(gopass show dev/aws-secret-key)"
+  cd -
 }
 
 function task_usage {
