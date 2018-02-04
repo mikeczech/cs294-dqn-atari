@@ -1,4 +1,5 @@
 playbook.retry
+**/__pycache__/
 /venv/
 *tfstate*
 deploy/.terraform
