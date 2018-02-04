@@ -37,6 +37,7 @@
         wget https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-64bit-static.tar.xz
         tar -xf ffmpeg-release-64bit-static.tar.xz
         ln -s /usr/local/bin/ffmpeg/ffmpeg-3.4.1-64bit-static/ffmpeg /usr/bin/ffmpeg
+        creates: /usr/local/bin/ffmpeg
 
 - hosts: all
   vars:
