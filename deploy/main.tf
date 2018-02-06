@@ -58,7 +58,7 @@ resource "aws_key_pair" "auth" {
 
 resource "aws_instance" "deep_learning" {
   ami           = "ami-ca0136b0"
-  instance_type = "t2.micro"
+  instance_type = "p2.xlarge"
   key_name      = "${aws_key_pair.auth.id}"
 
   vpc_security_group_ids = ["${aws_security_group.default.id}"]
