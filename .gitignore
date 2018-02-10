@@ -1,6 +1,8 @@
 playbook.retry
 **/__pycache__/
 /venv/
+/checkpoints/
+/recordings/
 *tfstate*
 deploy/.terraform
 .DS_Store
