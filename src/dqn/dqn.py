@@ -1,4 +1,5 @@
 import sys
+import os
 import gym.spaces
 import itertools
 import numpy as np
@@ -10,6 +11,8 @@ from dqn_utils import *
 
 
 OptimizerSpec = namedtuple("OptimizerSpec", ["constructor", "kwargs", "lr_schedule"])
+
+LOG_EVERY_N_STEPS = 10000
 
 def learn(env,
           q_func,
@@ -145,10 +148,10 @@ def learn(env,
     mean_episode_reward      = -float('nan')
     best_mean_episode_reward = -float('inf')
     last_obs = env.reset()
-    LOG_EVERY_N_STEPS = 10000
 
     checkpoint_dir_name = time.time()
     saver = tf.train.Saver(max_to_keep=10)
+    summary_writer = tf.summary.FileWriter(os.environ['TF_LOGDIR'], session.graph)
     for t in itertools.count():
         ### 1. Check stopping criterion
         if stopping_criterion is not None and stopping_criterion(env, t):
@@ -201,17 +204,27 @@ def learn(env,
                 saver.save(session, 'checkpoints/{}/model'.format(checkpoint_dir_name), global_step=t)
                 num_param_updates = 0
 
-        ### 4. Log progress
-        episode_rewards = get_wrapper_by_name(env, "Monitor").get_episode_rewards()
-        if len(episode_rewards) > 0:
-            mean_episode_reward = np.mean(episode_rewards[-100:])
-        if len(episode_rewards) > 100:
-            best_mean_episode_reward = max(best_mean_episode_reward, mean_episode_reward)
-        if t % LOG_EVERY_N_STEPS == 0 and model_initialized:
-            print("Timestep %d" % (t,))
-            print("mean reward (100 episodes) %f" % mean_episode_reward)
-            print("best mean reward %f" % best_mean_episode_reward)
-            print("episodes %d" % len(episode_rewards))
-            print("exploration %f" % exploration.value(t))
-            print("learning_rate %f" % optimizer_spec.lr_schedule.value(t))
-            sys.stdout.flush()
+        log_process(summary_writer, env, t, mean_episode_reward, best_mean_episode_reward, model_initialized, optimizer_spec, exploration)
+
+
+def log_process(summary_writer, env, t, mean_episode_reward, best_mean_episode_reward, model_initialized, optimizer_spec, exploration):
+    episode_rewards = get_wrapper_by_name(env, "Monitor").get_episode_rewards()
+    if len(episode_rewards) > 0:
+        mean_episode_reward = np.mean(episode_rewards[-100:])
+        reward_summary = tf.Summary()
+        reward_summary.value.add(tag='mean_episode_reward', simple_value=mean_episode_reward)
+        summary_writer.add_summary(reward_summary, t)
+
+    if len(episode_rewards) > 100:
+        best_mean_episode_reward = max(best_mean_episode_reward, mean_episode_reward)
+
+    if t % LOG_EVERY_N_STEPS == 0 and model_initialized:
+        print("Timestep %d" % (t,))
+        print("mean reward (100 episodes) %f" % mean_episode_reward)
+        print("best mean reward %f" % best_mean_episode_reward)
+        print("episodes %d" % len(episode_rewards))
+        print("exploration %f" % exploration.value(t))
+        print("learning_rate %f" % optimizer_spec.lr_schedule.value(t))
+
+        summary_writer.flush()
+        sys.stdout.flush()

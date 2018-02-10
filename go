@@ -3,7 +3,7 @@
 set -eu
 
 export ROOT_DIR=app
-export TF_LOGDIR=/var/logs/tensorboard
+export TF_LOGDIR=$(pwd)/logs
 export TF_PROVIDER_USER=ec2-user
 export SOURCES=src
 
@@ -11,6 +11,7 @@ function task_clean {
   rm -rv ./venv
   rm -rv ./recordings
   rm -rv ./checkpoints
+  rm -rv ./logs
   rm hosts
 }
 
@@ -77,6 +78,7 @@ function task_run {
   ensure_venv
   mkdir -p recordings
   mkdir -p checkpoints
+  mkdir -p logs
   PYTHONPATH=$(pwd)/src/dqn:$PYTHONPATH python $SOURCES/main.py
 }
 
