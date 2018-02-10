@@ -85,7 +85,7 @@ function task_run {
     exit 1
   fi
   sync
-  ssh -i "$SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)" "cd ${ROOT_DIR} && ./go local-run"
+  ssh -i "$SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)" "cd ${ROOT_DIR} && tmux && ./go local-run"
 }
 
 function task_tf {
