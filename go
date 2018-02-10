@@ -69,6 +69,17 @@ function ensure_ssh_key {
   export SSH_PUBLIC_KEY=${SSH_KEY}.pub
 }
 
+function ensure_aws_keys {
+  if [ -z "${AWS_ACCESS_KEY:-}" ]; then
+    echo "Please specify AWS_ACCESS_KEY."
+    exit 1
+  fi
+  if [ -z "${AWS_SECRET_KEY:-}" ]; then
+    echo "Please specify AWS_SECRET_KEY."
+    exit 1
+  fi
+}
+
 function task_deploy {
   task_tf "apply"
   provision
@@ -93,11 +104,12 @@ function task_ssh {
 
 function task_tf {
   ensure_ssh_key
+  ensure_aws_keys
   cd deploy/
   terraform "$@" \
     -var "ssh_public_key=$SSH_PUBLIC_KEY" \
-    -var "access_key=$(gopass show dev/aws-access-key)" \
-    -var "secret_key=$(gopass show dev/aws-secret-key)"
+    -var "access_key=$AWS_ACCESS_KEY" \
+    -var "secret_key=$AWS_SECRET_KEY"
   cd -
 }
 
