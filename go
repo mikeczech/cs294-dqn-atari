@@ -85,7 +85,7 @@ function task_deploy {
   provision
 }
 
-function task_run {
+function task_train {
   ensure_venv
   mkdir -p recordings
   mkdir -p checkpoints
@@ -114,7 +114,7 @@ function task_tf {
 }
 
 function task_usage {
-  echo "Usage: $0 clean | deploy | tensorboard | ssh | run | sync | gpu-usage | tf"
+  echo "Usage: $0 clean | deploy | tensorboard | ssh | learn-pong | sync | gpu-usage | tf"
   exit 1
 }
 
@@ -135,7 +135,7 @@ case ${CMD} in
   deploy) task_deploy  "$@" ;;
   sync) task_sync ;;
   ssh) task_ssh ;;
-  run) task_run ;;
+  train) task_train ;;
   gpu-usage) task_gpu_usage ;;
   tf) task_tf  "$@" ;;
   *) task_usage ;;
