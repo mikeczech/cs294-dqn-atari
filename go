@@ -9,6 +9,8 @@ export SOURCES=src
 
 function task_clean {
   rm -rv ./venv
+  rm -rv ./recordings
+  rm -rv ./checkpoints
   rm hosts
 }
 
@@ -20,10 +22,11 @@ function ensure_venv {
   set +u
   source ./venv/bin/activate
 
-  # fix for pip to recognize lib64 packages (needed for Amazon Deep Learning Base AMI)
+  # fix for pip to recognize lib64 packages / CUDA (needed for Amazon Deep Learning Base AMI)
   export PYTHONPATH=venv/lib64/python3.4/dist-packages:$PYTHONPATH
-
+  export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
   export LC_ALL=C # set locale for python
+
   set -u
 }
 
@@ -70,6 +73,8 @@ function task_deploy {
 
 function task_local_run {
   ensure_venv
+  mkdir -p recordings
+  mkdir -p checkpoints
   PYTHONPATH=$(pwd)/src/dqn:$PYTHONPATH python $SOURCES/main.py
 }
 

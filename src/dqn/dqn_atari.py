@@ -1,7 +1,8 @@
 import gym
 from gym import wrappers
-import os.path as osp
 import random
+import time
+import os
 import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.layers as layers
@@ -77,10 +78,12 @@ def atari_learn(env,
     )
     env.close()
 
+
 def get_available_gpus():
     from tensorflow.python.client import device_lib
     local_device_protos = device_lib.list_local_devices()
     return [x.physical_device_desc for x in local_device_protos if x.device_type == 'GPU']
+
 
 def set_global_seeds(i):
     try:
@@ -88,9 +91,10 @@ def set_global_seeds(i):
     except ImportError:
         pass
     else:
-        tf.set_random_seed(i) 
+        tf.set_random_seed(i)
     np.random.seed(i)
     random.seed(i)
+
 
 def get_session():
     tf.reset_default_graph()
@@ -98,8 +102,8 @@ def get_session():
         inter_op_parallelism_threads=1,
         intra_op_parallelism_threads=1)
     session = tf.Session(config=tf_config)
-    print("AVAILABLE GPUS: ", get_available_gpus())
     return session
+
 
 def get_env(task, seed):
     env_id = task.env_id
@@ -109,11 +113,12 @@ def get_env(task, seed):
     set_global_seeds(seed)
     env.seed(seed)
 
-    expt_dir = '/tmp/hw3_vid_dir2/'
-    env = wrappers.Monitor(env, osp.join(expt_dir, "gym"), force=True)
+    expt_dir = 'recordings/{}'.format(time.time())
+    env = wrappers.Monitor(env, expt_dir, force=True)
     env = wrap_deepmind(env)
 
     return env
+
 
 def run():
     # Get Atari games.
