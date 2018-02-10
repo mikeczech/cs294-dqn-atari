@@ -7,26 +7,6 @@
         timeout: 500
 
 - hosts: all
-  vars:
-    work_dir: "/home/{{ username }}/{{ root_dir }}"
-  tasks:
-    - name: Create directory for app
-      file:
-        path: "{{ work_dir }}"
-        state: directory
-
-    - name: Synchronize source code
-      synchronize:
-        src: src
-        dest: "{{ work_dir }}"
-
-    - name: Copy Go script for starting services
-      copy:
-        src: go
-        dest: "{{ work_dir }}/go"
-        mode: u+x
-
-- hosts: all
   become: true
   tasks:
     - name: Install ffmpeg
