@@ -39,10 +39,12 @@ function ensure_ansible {
   pip install ansible
 }
 
-function sync {
+function task_sync {
   ensure_ssh_key
   echo "Syncing files..."
   rsync -a --include={go,src/***} --exclude="*" . -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)":/home/"$TF_PROVIDER_USER"/app
+  # rsync -a -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)":${ROOT_DIR}/recordings .
+  # rsync -a -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)":${ROOT_DIR}/checkpoints .
   echo "..Done!"
 }
 
@@ -71,21 +73,20 @@ function task_deploy {
   provision
 }
 
-function task_local_run {
+function task_run {
   ensure_venv
   mkdir -p recordings
   mkdir -p checkpoints
   PYTHONPATH=$(pwd)/src/dqn:$PYTHONPATH python $SOURCES/main.py
 }
 
-function task_run {
+function task_ssh {
   ensure_ssh_key
   if [ -z "$(get_ip)" ]; then
     echo "Please deploy your environment (./go deploy)"
     exit 1
   fi
-  sync
-  ssh -i "$SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)" "cd ${ROOT_DIR} && tmux && ./go local-run"
+  ssh -i "$SSH_PRIVATE_KEY" -t "$TF_PROVIDER_USER"@"$(get_ip)" "cd ${ROOT_DIR} && bash -c 'tmux new-session -A -s main'"
 }
 
 function task_tf {
@@ -99,7 +100,7 @@ function task_tf {
 }
 
 function task_usage {
-  echo "Usage: $0 clean | deploy | local-run | run | tf"
+  echo "Usage: $0 clean | deploy | tensorboard | ssh | run | sync | gpu-usage | tf"
   exit 1
 }
 
@@ -108,14 +109,20 @@ function task_tensorboard {
   tensorboard --logdir="$TF_LOGDIR"
 }
 
+function task_gpu_usage {
+  watch -n 1 nvidia-smi
+}
+
 CMD=${1:-}
 shift || true
 case ${CMD} in
   clean) task_clean ;;
   tensorboard) task_tensorboard ;;
   deploy) task_deploy  "$@" ;;
-  local-run) task_local_run ;;
+  sync) task_sync ;;
+  ssh) task_ssh ;;
   run) task_run ;;
+  gpu-usage) task_gpu_usage ;;
   tf) task_tf  "$@" ;;
   *) task_usage ;;
 esac
