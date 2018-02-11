@@ -31,7 +31,7 @@ function ensure_venv {
   set -u
 }
 
-function get_ip {
+function task_get_ip {
   cd deploy && terraform output ip
 }
 
@@ -43,9 +43,9 @@ function ensure_ansible {
 function task_sync {
   ensure_ssh_key
   echo "Syncing files..."
-  rsync -a --include={go,src/***} --exclude="*" . -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)":/home/"$TF_PROVIDER_USER"/app
-  # rsync -a -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)":${ROOT_DIR}/recordings .
-  # rsync -a -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(get_ip)":${ROOT_DIR}/checkpoints .
+  rsync -a --include={go,src/***} --exclude="*" . -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(task_get_ip)":/home/"$TF_PROVIDER_USER"/app
+  # rsync -a -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(task_get_ip)":${ROOT_DIR}/recordings .
+  # rsync -a -e "ssh -i $SSH_PRIVATE_KEY" "$TF_PROVIDER_USER"@"$(task_get_ip)":${ROOT_DIR}/checkpoints .
   echo "..Done!"
 }
 
@@ -53,7 +53,7 @@ function provision {
   ensure_ansible
   ensure_ssh_key
   echo "ec2" \
-       "ansible_host=$(get_ip)" \
+       "ansible_host=$(task_get_ip)" \
        "ansible_user=$TF_PROVIDER_USER" \
        "ansible_ssh_private_key_file=${SSH_PRIVATE_KEY}" \
        > hosts
@@ -95,11 +95,11 @@ function task_train {
 
 function task_ssh {
   ensure_ssh_key
-  if [ -z "$(get_ip)" ]; then
+  if [ -z "$(task_get_ip)" ]; then
     echo "Please deploy your environment (./go deploy)"
     exit 1
   fi
-  ssh -i "$SSH_PRIVATE_KEY" -t "$TF_PROVIDER_USER"@"$(get_ip)" "cd ${ROOT_DIR} && bash -c 'tmux new-session -A -s main'"
+  ssh -i "$SSH_PRIVATE_KEY" -t "$TF_PROVIDER_USER"@"$(task_get_ip)" "cd ${ROOT_DIR} && bash -c 'tmux new-session -A -s main'"
 }
 
 function task_tf {
@@ -114,7 +114,7 @@ function task_tf {
 }
 
 function task_usage {
-  echo "Usage: $0 clean | deploy | tensorboard | ssh | learn-pong | sync | gpu-usage | tf"
+  echo "Usage: $0 clean | deploy | ip | tensorboard | ssh | train | sync | gpu-usage | tf"
   exit 1
 }
 
@@ -133,6 +133,7 @@ case ${CMD} in
   clean) task_clean ;;
   tensorboard) task_tensorboard ;;
   deploy) task_deploy  "$@" ;;
+  ip) task_get_ip  "$@" ;;
   sync) task_sync ;;
   ssh) task_ssh ;;
   train) task_train ;;
