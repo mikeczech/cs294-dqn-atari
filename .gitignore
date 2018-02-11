@@ -3,6 +3,7 @@ playbook.retry
 /venv/
 /checkpoints/
 /recordings/
+/logs/
 *tfstate*
 deploy/.terraform
 .DS_Store
