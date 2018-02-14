@@ -85,12 +85,13 @@ function task_deploy {
   provision
 }
 
-function task_train {
+function task_run {
+  local path_to_main=$1
   ensure_venv
   mkdir -p recordings
   mkdir -p checkpoints
   mkdir -p logs
-  PYTHONPATH=$(pwd)/src/dqn:$PYTHONPATH python $SOURCES/main.py
+  PYTHONPATH="$(pwd)/src:$PYTHONPATH" python "$path_to_main"
 }
 
 function task_ssh {
@@ -114,7 +115,7 @@ function task_tf {
 }
 
 function task_usage {
-  echo "Usage: $0 clean | deploy | ip | tensorboard | ssh | train | sync | gpu-usage | tf"
+  echo "Usage: $0 clean | deploy | ip | tensorboard | ssh | run | sync | gpu-usage | tf"
   exit 1
 }
 
@@ -136,7 +137,7 @@ case ${CMD} in
   ip) task_get_ip  "$@" ;;
   sync) task_sync ;;
   ssh) task_ssh ;;
-  train) task_train ;;
+  run) task_run "$@" ;;
   gpu-usage) task_gpu_usage ;;
   tf) task_tf  "$@" ;;
   *) task_usage ;;

@@ -7,7 +7,7 @@ import random
 import time
 import tensorflow as tf
 from collections import namedtuple
-from dqn_utils import *
+from dqn.dqn_utils import *
 
 
 OptimizerSpec = namedtuple("OptimizerSpec", ["constructor", "kwargs", "lr_schedule"])
