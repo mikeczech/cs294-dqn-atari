@@ -91,7 +91,8 @@ function task_run {
   mkdir -p recordings
   mkdir -p checkpoints
   mkdir -p logs
-  PYTHONPATH="$(pwd)/src:$PYTHONPATH" python "$path_to_main"
+  shift || true
+  PYTHONPATH="$(pwd)/src:$PYTHONPATH" python "$path_to_main" "$@"
 }
 
 function task_ssh {

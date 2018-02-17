@@ -1,6 +1,7 @@
 import gym
 from gym import wrappers
 import random
+from enum import IntEnum
 import time
 import os
 import numpy as np
@@ -10,6 +11,11 @@ import tensorflow.contrib.layers as layers
 from dqn import dqn
 from dqn.dqn_utils import *
 from dqn.atari_wrappers import *
+
+
+class Game(IntEnum):
+    BREAKOUT = 1
+    PONG = 3
 
 
 def atari_model(img_in, num_actions, scope, reuse=False):
@@ -120,12 +126,51 @@ def get_env(task, seed):
     return env
 
 
-def run():
+def run(checkpoint):
+    benchmark = gym.benchmark_spec('Atari40M')
+    task = benchmark.tasks[Game.BREAKOUT]
+    frame_history_len = 4
+    env_id = task.env_id
+    env = gym.make(env_id)
+    env = wrap_deepmind(env)
+    replay_buffer = ReplayBuffer(size=5, frame_history_len=frame_history_len)
+    num_actions = env.action_space.n
+    session = get_session()
+    last_obs = env.reset()
+    done = False
+
+    if len(env.observation_space.shape) == 1:
+        # This means we are running on low-dimensional observations (e.g. RAM)
+        input_shape = env.observation_space.shape
+    else:
+        img_h, img_w, img_c = env.observation_space.shape
+        input_shape = (img_h, img_w, frame_history_len * img_c)
+
+    obs_t_ph = tf.placeholder(tf.uint8, [None] + list(input_shape))
+    obs_t_float = tf.cast(obs_t_ph, tf.float32) / 255.0
+    q_func = atari_model(obs_t_float, num_actions, 'target_q_func', reuse=False)
+
+    saver = tf.train.Saver(var_list=tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='target_q_func'))
+    saver.restore(session, checkpoint)
+
+    while not done:
+        replay_buffer.store_frame(last_obs)
+        if replay_buffer.can_sample(frame_history_len):
+            encoded_last_obs = replay_buffer.encode_recent_observation().reshape(1, *input_shape)
+            last_obs_q = session.run(q_func, {obs_t_ph: encoded_last_obs})
+            action = np.argmax(last_obs_q[0])
+        else:
+            action = random.randint(0, num_actions - 1)
+        last_obs, _, done, _ = env.step(action)
+        env.render()
+
+
+def train():
     # Get Atari games.
     benchmark = gym.benchmark_spec('Atari40M')
 
     # Change the index to select a different game.
-    task = benchmark.tasks[3]
+    task = benchmark.tasks[Game.BREAKOUT]
 
     # Run training
     seed = 0 # Use a seed of zero (you may want to randomize the seed!)
