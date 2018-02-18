@@ -116,7 +116,7 @@ function task_tf {
 }
 
 function task_usage {
-  echo "Usage: $0 clean | deploy | ip | tensorboard | ssh | run | sync | gpu-usage | tf"
+  echo "Usage: $0 clean | deploy | ip | tensorboard | ssh | run | sync | gpu-usage | tf | jupyter"
   exit 1
 }
 
@@ -127,6 +127,11 @@ function task_tensorboard {
 
 function task_gpu_usage {
   watch -n 1 nvidia-smi
+}
+
+function task_jupyter {
+  # TODO use jupyter from venv
+  jupyter notebook --ip=0.0.0.0 --port=8888
 }
 
 CMD=${1:-}
@@ -141,5 +146,6 @@ case ${CMD} in
   run) task_run "$@" ;;
   gpu-usage) task_gpu_usage ;;
   tf) task_tf  "$@" ;;
+  jupyter) task_jupyter  "$@" ;;
   *) task_usage ;;
 esac
