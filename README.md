@@ -3,7 +3,9 @@
 This repository contains code for training a neural network to play Atari games.
 All code is based on ideas of the DeepMind paper  [*Playing Atari with Deep Reinforcement Learning*](https://arxiv.org/pdf/1312.5602v1.pdf) and was created in the context of the course [*CS 294: Deep Reinforcement Learning, Fall 2017*](http://rll.berkeley.edu/deeprlcourse/) of the [Berkely University](https://www.berkeley.edu/).
 
-In addition to training a network locally, the repository makes it easy to provision a GPU EC2 instance in AWS for training.
+In addition to training a network locally, the repository makes it easy to train on a GPU EC2 instance in AWS.
+
+![Breakout](images/breakout.gif)
 
 ## Requirements
 
@@ -14,14 +16,14 @@ In addition to training a network locally, the repository makes it easy to provi
 
 ## General Instructions
 
-All operations can be accessed through the *go script* in the root folder. Running the script without parameters prints all operations that are available.
+All operations can be accessed through the *go script* inside the root directory. Running the script without parameters prints available operations.
 
 ```bash
 ./go
 Usage: ./go clean | deploy | ip | tensorboard | ssh | run | sync | gpu-usage | tf
 ```
 
-## Train the network
+## Training the Network
 
 To start training, run
 
@@ -35,9 +37,9 @@ To observe how the network develops during training, run
 ```bash
 ./go tensorboard
 ```
-Then visit the displayed URL pointing to a locally running [Tensorboard](https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard) server which provides a nice graph with the relationship between the number of training steps and the strength of the neural network in playing the game.
+Then visit the displayed URL which points to a local [Tensorboard](https://www.tensorflow.org/programmers_guide/summaries_and_tensorboard) server which provides a nice graph showing the relationship between the number of training steps and the strength of the neural network in playing the game.
 
-## Load a Pretrained Model
+## Loading a Pretrained Network
 
 To load a pretrained model, run
 ```bash
@@ -45,9 +47,9 @@ To load a pretrained model, run
 ```
 where the last parameter points to a checkpoint that was created during a previous training session.
 
-## Train on a GPU instance in AWS
+## Training in AWS
 
-To provision a ready-to-use p2.xlarge instance in AWS, first set the environment variables **SSH\_KEY**, **AWS\_ACCESS\_KEY**, and **AWS\_SECRET\_KEY**
+To provision a ready-to-use GPU instance in AWS, first set the environment variables **SSH\_KEY**, **AWS\_ACCESS\_KEY**, and **AWS\_SECRET\_KEY**
 ```bash
 export SSH_KEY=~/.ssh/id_rsa
 export AWS_ACCESS_KEY={your access key}
@@ -58,14 +60,14 @@ Then run
 ./go deploy
 ./go sync
 ```
-This operation will use Terraform and [Ansible](https://www.ansible.com/) to create a new EC2 instance based on the [Amazon Deep Learning Base AMI](https://docs.aws.amazon.com/dlami/latest/devguide/overview-base.html). Note that you might need to request a limit increase for p2.xlarge instances first.
+The first command will use Terraform and [Ansible](https://www.ansible.com/) to create a new EC2 instance based on the [Amazon Deep Learning Base AMI](https://docs.aws.amazon.com/dlami/latest/devguide/overview-base.html). Note that you might need to request a limit increase for p2.xlarge instances first. The second command synchronizes the remote machine with the local one.
 
-To login to the newly created EC2 instance, run
+To login to the freshly created EC2 instance, run
 ```bash
 ./go ssh
 ```
 
-Now you are logged in to a [Tmux](https://wiki.ubuntuusers.de/tmux/) environment which provides all the operations of this repository (e.g. run *./go run src/train\_dqn.py* to start the training).
+Now you are logged in to a [tmux](https://wiki.ubuntuusers.de/tmux/) environment which provides all the operations of this repository (e.g. run *./go run src/train\_dqn.py* to start training).
 
 ## Terminate all AWS Resources after Training
 
