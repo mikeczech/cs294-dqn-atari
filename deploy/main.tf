@@ -4,60 +4,6 @@ provider "aws" {
   region     = "us-east-1"
 }
 
-resource "aws_s3_bucket" "bucket" {
-  bucket = "rl-artifacts-bucket"
-  acl    = "private"
-
-  tags {
-    Name = "RL Artifacts"
-    Environment = "Dev"
-  }
-}
-
-resource "aws_iam_role" "s3_iam_role" {
-  name = "s3_iam_role"
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sts:AssumeRole",
-      "Principal": {
-        "Service": "ec2.amazonaws.com"
-      },
-      "Effect": "Allow"
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_instance_profile" "s3_instance_profile" {
-  name = "s3_instance_profile"
-  role = "${aws_iam_role.s3_iam_role.name}"
-}
-
-resource "aws_iam_role_policy" "s3_iam_role_policy" {
-  name = "s3_iam_role_policy"
-  role = "${aws_iam_role.s3_iam_role.id}"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": "s3:*",
-      "Resource": [
-        "arn:aws:s3::::rl-artifacts-bucket",
-        "arn:aws:s3::::rl-artifacts-bucket/*"
-      ]
-    }
-  ]
-}
-EOF
-}
-
 resource "aws_vpc" "default" {
   cidr_block = "10.0.0.0/16"
 }
@@ -98,14 +44,6 @@ resource "aws_security_group" "default" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Jupyter access
-  ingress {
-    from_port   = 8888
-    to_port     = 8888
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
   egress {
     from_port   = 0
     to_port     = 0
@@ -126,8 +64,6 @@ resource "aws_instance" "deep_learning" {
   vpc_security_group_ids = ["${aws_security_group.default.id}"]
 
   subnet_id = "${aws_subnet.default.id}"
-
-  iam_instance_profile = "${aws_iam_instance_profile.s3_instance_profile.id}"
 }
 
 output "ip" {
